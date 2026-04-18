@@ -29,7 +29,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git remote add upstream https://github.com/NousResearch/hermes-agent.git
 
-      - name: Fast-forward main from upstream
+      - name: Sync main from upstream
         run: |
           set -euo pipefail
 
@@ -46,5 +46,15 @@ jobs:
             exit 0
           fi
 
-          git merge --ff-only upstream/main
+          if git merge-base --is-ancestor upstream/main HEAD; then
+            echo "Fork already contains upstream/main."
+            exit 0
+          fi
+
+          if git merge-base --is-ancestor HEAD upstream/main; then
+            git merge --ff-only upstream/main
+          else
+            git merge --no-edit upstream/main
+          fi
+
           git push origin HEAD:main
